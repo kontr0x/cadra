@@ -2,6 +2,7 @@ import argparse
 import json
 import neo4j
 
+from modules.attribute_assessment import assess_user_attributes
 from modules.logging_base import Logging
 from modules.neo4j_utils import vertify_connection
 from models.neo4j import Path, UserPaths, User
@@ -55,11 +56,10 @@ def main(neo4j_uri: str, neo4j_user: str, neo4j_password: str, name: str, attrib
                 logger.error(f"User {name} not found in the database.")
                 return
 
-    print(user)
-    matching_rules = attribute_rule_engine.get_matching_rules(user)
-    if matching_rules:
-        matching_rules_names = [rule.get('rule_name') for rule in matching_rules]
-        print(f"Matching attribute rules for user {name}: {matching_rules_names}")
+    logger.debug(f"User object: {user}")
+    adass_score = assess_user_attributes(user, attribute_rule_engine)
+    logger.info(f"Attribute Assessment: {adass_score}")
+
     if paths:
         for path in user_paths.paths:
             print(path)
