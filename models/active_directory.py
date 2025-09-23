@@ -1,0 +1,74 @@
+from enum import Enum
+
+
+UAC_FLAGS = [
+    "SCRIPT",
+    "ACCOUNTDISABLE",
+    "HOMEDIR_REQUIRED",
+    "LOCKOUT",
+    "PASSWD_NOTREQD",
+    "PASSWD_CANT_CHANGE",
+    "ENCRYPTED_TEXT_PASSWORD_ALLOWED",
+    "TEMP_DUPLICATE_ACCOUNT",
+    "NORMAL_ACCOUNT",
+    "INTERDOMAIN_TRUST_ACCOUNT",
+    "WORKSTATION_TRUST_ACCOUNT",
+    "SERVER_TRUST_ACCOUNT",
+    "DONT_EXPIRE_PASSWORD",
+    "MNS_LOGON_ACCOUNT",
+    "SMARTCARD_REQUIRED",
+    "TRUSTED_FOR_DELEGATION",
+    "NOT_DELEGATED",
+    "USE_DES_KEY_ONLY",
+    "DONT_REQUIRE_PREAUTH",
+    "PASSWORD_EXPIRED",
+    "TRUSTED_TO_AUTHENTICATE_FOR_DELEGATION"
+]
+
+
+class GenericProperties(Enum):
+    ISCRITICALSYSTEMOBJECT = False  # Default is False
+
+
+GENERIC_PROPERTIES = {prop.name.lower(): prop.value for prop in GenericProperties}
+
+
+class PrincipalProperties(Enum):
+    OBJECTSID = None
+    OBJECTGUID = None
+    DISTINGUISHEDNAME = None
+    CN = None
+    NAME = None
+    DISPLAYNAME = None
+    GIVENNAME = None
+    SN = None
+    USERPRINCIPALNAME = None
+    SAMACCOUNTNAME = None
+    MAIL = None
+    DESCRIPTION = None
+    WHENCREATED = None
+    WHENCHANGED = None
+    LASTLOGONDATE = None
+    PASSWORDLASTSET = None
+    ACCOUNTEXPIRYDATE = None
+    LOGONCOUNT = 0
+    BADPASSWORDATTEMPTS = 0
+    PRIMARYGROUPID = 0
+    OBJECTCLASS = []
+    MEMBEROF = []
+    DIRECTMEMBEROF = []
+    ADMINCOUNT = 0
+    PROTECTEDFROMACCIDENTALDELETION = False
+    SERVICEPRINCIPALNAME = []
+    USERACCOUNTCONTROL = 0
+    ENABLED = True
+    PWDNEVEREXPIRES = False
+    CANSENDMAIL = False
+    ISRESTRICTED = False
+    SENSITIVE = False
+    UNCONSTRAINEDDELEGATION = False
+    DONTREQPREAUTH = False
+    TRUSTEDTOAUTH = False
+
+
+PRINCIPAL_PROPERTIES = {prop.name.lower(): prop.value for prop in PrincipalProperties}
