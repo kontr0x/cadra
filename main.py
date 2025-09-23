@@ -3,7 +3,7 @@ import json
 import neo4j
 
 from modules.logging_base import Logging
-from models.neo4j import Path, UserPaths
+from models.neo4j import Path, UserPaths, User
 
 logger = Logging().getLogger()
 
@@ -11,6 +11,11 @@ logger = Logging().getLogger()
 def get_direct_user_paths(session, username) -> list[neo4j.Record]:
     result = session.run("MATCH p=(n: User {name: $username})-[r]->() RETURN p", username=username)
     return list(result)
+
+
+def get_user(session, username) -> neo4j.Record:
+    result = session.run("MATCH (n: User {name: $username}) RETURN n LIMIT 1", username=username)
+    return result.single()[0] if result.single() is not None else None
 
 
 def main(neo4j_uri: str, neo4j_user: str, neo4j_password: str, name: str):
@@ -30,10 +35,23 @@ def main(neo4j_uri: str, neo4j_user: str, neo4j_password: str, name: str):
         logger.debug(f"Fetching direct user paths for user: {name}")
         paths = get_direct_user_paths(session, name)
 
+        user_paths: UserPaths
+        user: User
         if paths:
             logger.info(f"Direct paths for user {name}:")
             user_paths = UserPaths(paths)
-            print(user_paths.user)
+            user = user_paths.user
+        else:
+            user = get_user(session, name)
+            if user:
+                logger.info(f"User {name} found but has no direct paths.")
+                user = User(user)
+            else:
+                logger.error(f"User {name} not found in the database.")
+                user = None
+
+        print(user)
+        if paths:
             for path in user_paths.paths:
                 print(path)
 
