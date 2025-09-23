@@ -1,0 +1,28 @@
+{
+  "Name": "Kerberoastable Account",
+  "Metric": "AC",
+  "Value": "L",
+  "Prerequisite Criteria": {
+    "Node is of correct type": [
+      {
+        "Property": "type",
+        "Operator": "==",
+        "Value": "User"
+      }
+    ],
+    "Account is enabled": {
+      "Property": "ACCOUNTDISABLE",
+      "Operator": "==",
+      "Value": "False"
+    }
+  },
+  "Criteria": {
+    "Account has SPN": [
+      {
+        "Property": "ServicePrincipalNames",
+        "Operator": "set",
+        "Value": ""
+      }
+    ]
+  }
+}
