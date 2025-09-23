@@ -1,0 +1,80 @@
+{
+  "Name": "Tier Zero Object",
+  "Metric": "S",
+  "Value": "C",
+  "Prerequisite Criteria": {
+    "Node is of correct type": [
+      {
+        "Property": "type",
+        "Operator": "==",
+        "Value": "User"
+      },
+      {
+        "Property": "type",
+        "Operator": "==",
+        "Value": "Computer"
+      },
+      {
+        "Property": "type",
+        "Operator": "==",
+        "Value": "Domain"
+      }
+    ]
+  },
+  "Criteria": {
+    "Tier 0 membership": [
+      {
+        "Property": "memberof",
+        "Operator": "in",
+        "Value": "Domain Admins"
+      },
+      {
+        "Property": "memberof",
+        "Operator": "in",
+        "Value": "Enterprise Admins"
+      },
+      {
+        "Property": "memberof",
+        "Operator": "in",
+        "Value": "Schema Admins"
+      },
+      {
+        "Property": "memberof",
+        "Operator": "in",
+        "Value": "Administrators"
+      },
+      {
+        "Property": "memberof",
+        "Operator": "in",
+        "Value": "Account Operators"
+      },
+      {
+        "Property": "memberof",
+        "Operator": "in",
+        "Value": "Backup Operators"
+      },
+      {
+        "Property": "memberof",
+        "Operator": "in",
+        "Value": "Print Operators"
+      },
+      {
+        "Property": "memberof",
+        "Operator": "in",
+        "Value": "Server Operators"
+      }
+    ],
+    "Tier 0 attributes": [
+      {
+        "Property": "isCriticalSystemObject",
+        "Operator": "==",
+        "Value": "True"
+      },
+      {
+        "Property": "system_tags",
+        "Operator": "in",
+        "Value": "admin_tier_0"
+      }
+    ]
+  }
+}

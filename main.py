@@ -3,40 +3,45 @@ import json
 import neo4j
 
 from modules.logging_base import Logging
+from modules.neo4j_utils import vertify_connection
 from models.neo4j import Path, UserPaths, User
+from modules.rule_engine import RuleEngine
 
 logger = Logging().getLogger()
 
 
-def get_direct_user_paths(session, username) -> list[neo4j.Record]:
+def get_direct_user_paths(session: neo4j.Session, username: str) -> list[neo4j.Record]:
     result = session.run("MATCH p=(n: User {name: $username})-[r]->() RETURN p", username=username)
     return list(result)
 
 
-def get_user(session, username) -> neo4j.Record:
-    result = session.run("MATCH (n: User {name: $username}) RETURN n LIMIT 1", username=username)
-    return result.single()[0] if result.single() is not None else None
+def get_user(session: neo4j.Session, username: str) -> neo4j.Record:
+    result = session.run(
+        "MATCH (n: User {name: $username}) RETURN n LIMIT 1", username=username).single()
+    if result is None:
+        return None
+    return result[0]
 
 
-def main(neo4j_uri: str, neo4j_user: str, neo4j_password: str, name: str):
+def main(neo4j_uri: str, neo4j_user: str, neo4j_password: str, name: str, attributes_rules_dir_path: str):
     logger.debug(f"Initializing neo4j driver...")
     driver = neo4j.GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
     logger.debug(f"Neo4j driver initialized")
 
+    attribute_rule_engine = RuleEngine()
+    attribute_rule_engine.load_rules_from_directory(attributes_rules_dir_path)
+
+    user_paths: UserPaths
+    user: User
+
     with driver.session() as session:
-        # Example query to verify connection
-        result = session.run("RETURN 1 AS number")
-        for record in result:
-            if record["number"] == 1:
-                logger.debug("Successfully connected to Neo4j database.")
-            else:
-                logger.error("Failed to connect to Neo4j database.")
+        if not vertify_connection(session):
+            logger.error("Could not connect to Neo4j database. Please check your configuration.")
+            return
 
         logger.debug(f"Fetching direct user paths for user: {name}")
         paths = get_direct_user_paths(session, name)
 
-        user_paths: UserPaths
-        user: User
         if paths:
             logger.info(f"Direct paths for user {name}:")
             user_paths = UserPaths(paths)
@@ -48,12 +53,16 @@ def main(neo4j_uri: str, neo4j_user: str, neo4j_password: str, name: str):
                 user = User(user)
             else:
                 logger.error(f"User {name} not found in the database.")
-                user = None
+                return
 
-        print(user)
-        if paths:
-            for path in user_paths.paths:
-                print(path)
+    print(user)
+    matching_rules = attribute_rule_engine.get_matching_rules(user)
+    if matching_rules:
+        matching_rules_names = [rule.get('rule_name') for rule in matching_rules]
+        print(f"Matching attribute rules for user {name}: {matching_rules_names}")
+    if paths:
+        for path in user_paths.paths:
+            print(path)
 
 
 if __name__ == "__main__":
@@ -70,6 +79,7 @@ if __name__ == "__main__":
         with open("config.json", "r") as config_file:
             config = json.load(config_file)
             neo4j_config = config.get("Neo4jConfig", {})
+            rules_config = config.get("RulesConfig", {})
     except FileNotFoundError:
         raise Exception("Configuration file 'config.json' not found.")
     except json.JSONDecodeError:
@@ -82,6 +92,7 @@ if __name__ == "__main__":
     main(neo4j_uri=neo4j_config.get("uri"),
          neo4j_user=neo4j_config.get("user"),
          neo4j_password=neo4j_config.get("password"),
-         name=args.name
+         name=args.name,
+         attributes_rules_dir_path=rules_config.get("attributes_rules_dir_path", "rules/attributes")
          )
     logger.info("CADRA finished.")

@@ -1,6 +1,22 @@
 from typing import Any, Dict, List
+from neo4j import Session
 
+from modules.logging_base import Logging
 from models.bloodhound import NODE_TYPES
+
+logger = Logging().getLogger()
+
+
+def vertify_connection(session: Session) -> bool:
+    try:
+        result = session.run("RETURN 1 AS number")
+        for record in result:
+            if record["number"] == 1:
+                return True
+        logger.error("Something went terribly when trying to execute the test query")
+        return False
+    except Exception as e:
+        return False
 
 
 def get_node_type_from_labels(labels: List[str]) -> str:

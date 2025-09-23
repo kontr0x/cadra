@@ -3,5 +3,8 @@
         "uri": "bolt://localhost:7687",
         "user": "neo4j",
         "password": "bloodhoundcommunityedition"
+    },
+    "RulesConfig": {
+        "attributes_rules_dir_path": "rules/attributes"
     }
 }
