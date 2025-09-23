@@ -5,6 +5,19 @@
         "password": "bloodhoundcommunityedition"
     },
     "RulesConfig": {
-        "attributes_rules_dir_path": "rules/attributes"
+        "attributes_rules_dir_path": "rules/attributes",
+        "permissions_rules_dir_path": "rules/permissions"
+    },
+    "EventMonitoringConfig": {
+        "4886": false,
+        "4887": false,
+        "4899": false,
+        "4900": false,
+        "4728": false,
+        "5136": false,
+        "4768": false,
+        "4724": false,
+        "4670": false,
+        "4662": false
     }
 }

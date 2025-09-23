@@ -7,6 +7,7 @@ from modules.logging_base import Logging
 from modules.neo4j_utils import vertify_connection
 from models.neo4j import Path, UserPaths, User
 from modules.rule_engine import RuleEngine
+from modules.permission_assessment import assess_permissions
 
 logger = Logging().getLogger()
 
@@ -24,7 +25,8 @@ def get_user(session: neo4j.Session, username: str) -> neo4j.Record:
     return result[0]
 
 
-def main(neo4j_uri: str, neo4j_user: str, neo4j_password: str, name: str, attributes_rules_dir_path: str):
+def main(neo4j_uri: str, neo4j_user: str, neo4j_password: str, name: str, attributes_rules_dir_path: str,
+         permission_rules_dir_path: str, event_monitoring_config: dict):
     logger.debug(f"Initializing neo4j driver...")
     driver = neo4j.GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
     logger.debug(f"Neo4j driver initialized")
@@ -61,8 +63,11 @@ def main(neo4j_uri: str, neo4j_user: str, neo4j_password: str, name: str, attrib
     logger.info(f"Attribute Assessment: {adass_score}")
 
     if paths:
-        for path in user_paths.paths:
-            print(path)
+        cadra_score = assess_permissions(
+            user_paths.paths, permission_rules_dir_path, attribute_rule_engine, adass_score, event_monitoring_config)
+        logger.info(f"CADRA Score: {cadra_score}")
+    else:
+        logger.info("User has no direct paths, skipping permission assessment.")
 
 
 if __name__ == "__main__":
@@ -80,6 +85,7 @@ if __name__ == "__main__":
             config = json.load(config_file)
             neo4j_config = config.get("Neo4jConfig", {})
             rules_config = config.get("RulesConfig", {})
+            event_monitoring_config = config.get("EventMonitoringConfig", {})
     except FileNotFoundError:
         raise Exception("Configuration file 'config.json' not found.")
     except json.JSONDecodeError:
@@ -93,6 +99,10 @@ if __name__ == "__main__":
          neo4j_user=neo4j_config.get("user"),
          neo4j_password=neo4j_config.get("password"),
          name=args.name,
-         attributes_rules_dir_path=rules_config.get("attributes_rules_dir_path", "rules/attributes")
+         attributes_rules_dir_path=rules_config.get(
+             "attributes_rules_dir_path", "rules/attributes"),
+         permission_rules_dir_path=rules_config.get(
+             "permissions_rules_dir_path", "rules/permissions"),
+         event_monitoring_config=event_monitoring_config
          )
     logger.info("CADRA finished.")
