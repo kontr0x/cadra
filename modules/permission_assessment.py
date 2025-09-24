@@ -102,10 +102,8 @@ def _assess_permission_likelihood(path: Path, permission_rules: dict, adass_scor
 def _assess_permission_impact(path: Path, permission_rules: dict, rule_engine: RuleEngine) -> int:
     logger.debug(f"Assessing impact")
     traversable_edge = permission_rules[path.relationship.type].get('Traversable', False)
-    # Reevaluate all rules, this is necessary because the RuleEngine caches previous evaluations for convenience
-    rule_engine.evaluate_all_rules(path.end_node)
     matching_rules = rule_engine.get_matching_rules(path.end_node)
-    logger.debug(f"Matching Rules: {[rule['rule_name'] for rule in matching_rules]}")
+    logger.info(f"Matching Rules: {[rule['rule_name'] for rule in matching_rules]}")
     impact_rules = {
         'Very High': ['Tier Zero Object'],
         'High': ['Tier One Object'],

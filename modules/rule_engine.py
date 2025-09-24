@@ -12,7 +12,7 @@ logger = Logging().getLogger()
 class RuleEngine:
     def __init__(self):
         self.rules: List[Dict] = []
-        self.evaluated_rules: List[Dict] = []
+        self.evaluated_rules: Dict[int, List[Dict]] = {}
 
     def load_rules_from_directory(self, rules_directory: str) -> None:
         self.rules = []
@@ -151,9 +151,11 @@ class RuleEngine:
         logger.info(f"Evaluating all rules for node: {node.name} (ID: {node.id})")
         for rule in self.rules:
             result = self.evaluate_rule(rule, node)
-            self.evaluated_rules.append(result)
+            self.evaluated_rules.setdefault(node.id, []).append(result)
 
     def get_matching_rules(self, node: Node) -> List[Dict[str, Any]]:
-        if not self.evaluated_rules:
+        if not self.evaluated_rules.get(node.id):
             self.evaluate_all_rules(node)
-        return [result for result in self.evaluated_rules if result['matches']]
+        else:
+            logger.info(f"Using cached rule evaluations for node: {node.name} (ID: {node.id})")
+        return [result for result in self.evaluated_rules.get(node.id, []) if result.get('matches', False)]
